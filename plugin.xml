@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
+        id="cordova-plugin-google-wallet" version="0.2.3">
+    <name>Cordova Google Wallet Plugin</name>
+    <description>Cordova Device Plugin</description>
+    <license>Apache 2.0</license>
+    <keywords>Cordova,Google Wallet</keywords>
+    <js-module name="GoogleWallet" src="www/GoogleWallet.js">
+        <clobbers target="GooglePayIssuer" />
+    </js-module>
+
+    <platform name="android">      
+        <framework src="com.google.android.gms:play-services-tapandpay:18.3.2" />
+        <framework src="com.google.android.gms:play-services-oss-licenses:17.0.0" />
+    
+        <config-file target="config.xml" parent="/*">
+            <feature name="GoogleWallet">
+                <param name="android-package" value="com.landsbankinn.GoogleWallet" />
+            </feature>
+        </config-file>
+        <source-file src="src/android/GoogleWallet.java" target-dir="src/com/landsbankinn/googlewallet" />
+    </platform>
+</plugin>
