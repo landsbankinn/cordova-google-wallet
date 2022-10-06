@@ -7,6 +7,7 @@ import org.apache.cordova.PluginResult;
 import org.apache.cordova.CordovaWebView;
 
 import org.json.JSONArray;
+import org.json.JSONObject;
 
 import android.util.Log;
 import androidx.annotation.NonNull;
@@ -48,6 +49,15 @@ public class GoogleWallet extends CordovaPlugin {
             });
 
             return true;
+        } else if ("getStableHardwareId".equals(action)) {
+            this.cordova.getThreadPool().execute(new Runnable() {
+                @Override
+                public void run() {
+                    getStableHardwareId(callbackContext);
+                }
+            });
+
+            return true;
         }
         callbackContext.error("\"" + action + "\" is not a recognized action.");
         return false;
@@ -61,32 +71,79 @@ public class GoogleWallet extends CordovaPlugin {
                         new OnCompleteListener<String>() {
                             @Override
                             public void onComplete(@NonNull Task<String> task) {
-                                Log.i(TAG, "onComplete (getActiveWalletID) - " + task.isSuccessful());
+                                Log.i(TAG, "getActiveWalletID onComplete " + task.isSuccessful());
                                 if (task.isSuccessful()) {
                                     String result = task.getResult();
-                                    Log.i(TAG, "SUCCESS-getActiveWalletID");
                                     callbackContext.success(result);
                                 } else {
                                     ApiException apiException = (ApiException) task.getException();
                                     String message = apiException.getMessage();
-                                    Log.i(TAG, "ERROR-getActiveWalletID");
-                                    callbackContext.error(message);
+                                    int statusCode = apiException.getStatusCode();
+                                    Log.i(TAG, "getActiveWalletID onComplete " + Integer.toString(statusCode));
+                                    try {
+                                        JSONObject value = new JSONObject();
+                                        value.put("message", message);
+                                        value.put("statusCode", statusCode);
+                                        callbackContext.error(value);
+                                    } catch (Exception e) {
+                                        callbackContext.error("unknown error");
+                                    }
                                 }
                             }
-                        })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.i(TAG, "onFailure (getActiveWalletID) - " + e.getMessage());
-                        callbackContext.error(e.getMessage());
-                    }
-                })
-                .addOnCanceledListener(
-                        new OnCanceledListener() {
+                        });
+    }
+
+    /**
+     * Each physical Android device has a stable hardware ID which is consistent between wallets for a given device. This ID will change as a result of a factory reset.
+     * 
+     * The stable hardware ID MAY ONLY be used for the following purposes:
+     * - to encrypt inside OPC and provide back to Google Pay for push provisioning
+     * - to make a risk decision (without storing the value) before the start of a Push Provisioning flow
+     * 
+     * The stable hardware ID received through the client API MUST NOT be used for the following purposes:
+     * - stored by the issuer locally or at the backend
+     * - track user activity
+     * 
+     * The stable hardware ID may not be accessed by the issuer outside the Push Provisioning flow.
+     * 
+     * Note: Make sure you have a Wallet ID before retrieving the stable hardware ID. If a wallet is not created yet,
+     * the call to task.getResult() will return an empty String.
+     * 
+     * https://developers.google.com/pay/issuers/apis/push-provisioning/android/reading-wallet?authuser=2#getstablehardwareid
+     */
+    private void getStableHardwareId(CallbackContext callbackContext) {
+        Log.i(TAG, "getStableHardwareId");
+        tapAndPayClient
+                .getStableHardwareId()
+                .addOnCompleteListener(
+                        new OnCompleteListener<String>() {
                             @Override
-                            public void onCanceled() {
-                                Log.i(TAG, "onCanceled (getActiveWalletID) - ");
-                                callbackContext.error("canceled");
+                            public void onComplete(@NonNull Task<String> task) {
+                                Log.i(TAG, "getStableHardwareId onComplete " + task.isSuccessful());
+                                if (task.isSuccessful()) {
+                                    String hardwareId = task.getResult();
+                                    if (hardwareId == "") {
+                                        try {
+                                            JSONObject value = new JSONObject();
+                                            value.put("message", "No active wallet");
+                                            value.put("statusCode", 15002);
+                                            callbackContext.error(value);
+                                        } catch (Exception e) {
+                                            callbackContext.error(e.getMessage());
+                                        }
+                                    } else {
+                                        callbackContext.success(hardwareId);
+                                    }
+                                } else {
+                                    try {
+                                        JSONObject value = new JSONObject();
+                                        value.put("message", "Unknown error");
+                                        value.put("statusCode", 0);
+                                        callbackContext.error(value);
+                                    } catch (Exception e) {
+                                        callbackContext.error(e.getMessage());
+                                    }
+                                }
                             }
                         });
     }
