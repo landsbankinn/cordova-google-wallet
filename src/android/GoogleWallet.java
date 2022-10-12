@@ -46,7 +46,7 @@ public class GoogleWallet extends CordovaPlugin {
         Log.i(TAG, action);
         Log.i(TAG, args.toString());
 
-        this.callbackContext  = callbackContext;
+        this.callbackContext = callbackContext;
 
         if ("getActiveWalletID".equals(action)) {
             this.cordova.getThreadPool().execute(new Runnable() {
@@ -261,17 +261,33 @@ public class GoogleWallet extends CordovaPlugin {
         try {
             Log.i(TAG, "pushTokenize");
 
-            UserAddress userAddress =
-                    UserAddress.newBuilder()
-                            .setName(address.getString("name"))
-                            .setAddress1(address.getString("address1"))
-                            .setAddress2(address.getString("address2"))
-                            .setLocality(address.getString("locality"))
-                            .setAdministrativeArea(address.getString("administrativeArea"))
-                            .setCountryCode(address.getString("countryCode"))
-                            .setPostalCode(address.getString("postalCode"))
-                            .setPhoneNumber(address.getString("phoneNumber"))
-                            .build();
+            UserAddress.Builder builder = UserAddress.newBuilder();
+            if (address.has("name")) {
+                builder.setName(address.getString("name"));
+            }
+            if (address.has("address1")) {
+                builder.setAddress1(address.getString("address1"));
+            }
+            if (address.has("address2")) {
+                builder.setAddress2(address.getString("address2"));
+            }
+            if (address.has("locality")) {
+                builder.setLocality(address.getString("locality"));
+            }
+            if (address.has("administrativeArea")) {
+                builder.setAdministrativeArea(address.getString("administrativeArea"));
+            }
+            if (address.has("countryCode")) {
+                builder.setCountryCode(address.getString("countryCode"));
+            }
+            if (address.has("postalCode")) {
+                builder.setPostalCode(address.getString("postalCode"));
+            }
+            if (address.has("phoneNumber")) {
+                builder.setPhoneNumber(address.getString("phoneNumber"));
+            }
+
+            UserAddress userAddress = builder.build();
 
             PushTokenizeRequest pushTokenizeRequest =
                     new PushTokenizeRequest.Builder()
@@ -282,6 +298,8 @@ public class GoogleWallet extends CordovaPlugin {
                             .setLastDigits(lastDigits)
                             .setUserAddress(userAddress)
                             .build();
+            
+            cordova.setActivityResultCallback(this);
 
             tapAndPayClient.pushTokenize(this.cordova.getActivity(), pushTokenizeRequest, REQUEST_CODE_PUSH_TOKENIZE);
         } catch (Exception e) {
