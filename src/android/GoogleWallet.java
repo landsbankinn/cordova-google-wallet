@@ -285,7 +285,8 @@ public class GoogleWallet extends CordovaPlugin {
 
             tapAndPayClient.pushTokenize(this.cordova.getActivity(), pushTokenizeRequest, REQUEST_CODE_PUSH_TOKENIZE);
         } catch (Exception e) {
-            Log.i(TAG, e.getMessage());
+            Log.e(TAG, "pushTokenize error", e);
+            callbackContext.error(e.getMessage());
         }
     }
 
@@ -300,8 +301,10 @@ public class GoogleWallet extends CordovaPlugin {
                 try {
                     JSONObject value = new JSONObject();
                     value.put("type", "canceled");
+                    Log.e(TAG, "onActivityResult error RESULT_CANCELED");
                     callbackContext.error(value);
                 } catch (Exception e) {
+                    Log.e(TAG, "onActivityResult error RESULT_CANCELED JSON exception", e);
                     callbackContext.error(e.getMessage());
                 }
                 return;
@@ -312,11 +315,16 @@ public class GoogleWallet extends CordovaPlugin {
                     JSONObject value = new JSONObject();
                     value.put("type", "result");
                     value.put("tokenId", tokenId);
+                    Log.i(TAG, "onActivityResult ok tokenId:" + tokenId);
                     callbackContext.success(value);
                 } catch (Exception e) {
+                    Log.e(TAG, "onActivityResult error RESULT_OK JSON exception", e);
                     callbackContext.error(e.getMessage());
                 }
                 return;
+            } else {
+                Log.e(TAG, "onActivityResult error unknown resultCode: " + Integer.toString(resultCode));
+                callbackContext.error(resultCode);
             }
         }
     }
