@@ -16,6 +16,7 @@ import androidx.annotation.NonNull;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tapandpay.TapAndPay;
 import com.google.android.gms.tapandpay.TapAndPayClient;
+import com.google.android.gms.tapandpay.issuer.IsTokenizedRequest;
 import com.google.android.gms.tapandpay.issuer.PushTokenizeRequest;
 import com.google.android.gms.tapandpay.issuer.UserAddress;
 import com.google.android.gms.tapandpay.issuer.TokenInfo;
@@ -85,6 +86,20 @@ public class GoogleWallet extends CordovaPlugin {
                         JSONObject address = args.getJSONObject(3);
 
                         pushTokenize(opc, displayName, lastDigits, address, callbackContext);
+                    } catch (Exception e) {
+                        callbackContext.error(e.getMessage());
+                    }
+                }
+            });
+
+            return true;
+        } else if ("isCardInWallet".equals(action)) {
+            this.cordova.getThreadPool().execute(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        String identifier = args.getString(0);
+                        isCardInWallet(identifier, callbackContext);
                     } catch (Exception e) {
                         callbackContext.error(e.getMessage());
                     }
@@ -306,6 +321,60 @@ public class GoogleWallet extends CordovaPlugin {
             Log.e(TAG, "pushTokenize error", e);
             callbackContext.error(e.getMessage());
         }
+    }
+
+    /**
+     * Card lookup by last 4 FPAN digits
+     * Please note this endpoint can return false positives since the last four FPAN digits are not necessarily unique among tokens.
+     * @param indentifier last for FPAN TODO: what the frick is this
+     * 
+     * https://developers.google.com/pay/issuers/apis/push-provisioning/android/reading-wallet?authuser=2#istokenized
+     */
+    private void isCardInWallet(String identifier, CallbackContext callbackContext) {
+        IsTokenizedRequest request = new IsTokenizedRequest.Builder()
+        .setIdentifier(identifier)
+        .setNetwork(TapAndPay.CARD_NETWORK_VISA)
+        .setTokenServiceProvider(TapAndPay.TOKEN_PROVIDER_VISA)
+        .build();
+        tapAndPayClient
+        .isTokenized(request)
+        .addOnCompleteListener(
+            new OnCompleteListener<Boolean>() {
+                @Override
+                public void onComplete(@NonNull Task<Boolean> task) {
+                if (task.isSuccessful()) {
+                    if (task.getResult()) {
+                        Log.d(TAG, "Found a token with last four digits " + identifier + ".");
+                        try {
+                            JSONObject value = new JSONObject();
+                            value.put("result", "token found");
+                            value.put("statusCode", 200);
+                            callbackContext.success(value);
+                        } catch (Exception e) {
+                            callbackContext.error(e.getMessage());
+                        }
+                    } else {
+                        try {
+                            JSONObject value = new JSONObject();
+                            value.put("result", "token not found");
+                            value.put("statusCode", 200);
+                            callbackContext.success(value);
+                        } catch (Exception e) {
+                            callbackContext.error(e.getMessage());
+                        }
+                    }
+                } else {
+                    try {
+                        JSONObject value = new JSONObject();
+                        value.put("result", "Unknown error");
+                        value.put("statusCode", 0);
+                        callbackContext.error(value);
+                    } catch (Exception e) {
+                        callbackContext.error(e.getMessage());
+                    }
+                }
+            }
+            });
     }
 
     @Override
