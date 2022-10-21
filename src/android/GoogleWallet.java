@@ -326,7 +326,7 @@ public class GoogleWallet extends CordovaPlugin {
     /**
      * Card lookup by last 4 FPAN digits
      * Please note this endpoint can return false positives since the last four FPAN digits are not necessarily unique among tokens.
-     * @param indentifier last for FPAN TODO: what the frick is this
+     * @param indentifier last 4 FPAN (Last 4 card digits)
      * 
      * https://developers.google.com/pay/issuers/apis/push-provisioning/android/reading-wallet?authuser=2#istokenized
      */
