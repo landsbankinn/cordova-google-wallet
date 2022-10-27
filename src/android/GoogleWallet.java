@@ -97,7 +97,7 @@ public class GoogleWallet extends CordovaPlugin {
             this.cordova.getThreadPool().execute(new Runnable() {
                 @Override
                 public void run() {
-                    try {
+                    try{
                         String identifier = args.getString(0);
                         isCardInWallet(identifier, callbackContext);
                     } catch (Exception e) {
@@ -348,7 +348,6 @@ public class GoogleWallet extends CordovaPlugin {
                         try {
                             JSONObject value = new JSONObject();
                             value.put("result", "token found");
-                            value.put("statusCode", 200);
                             callbackContext.success(value);
                         } catch (Exception e) {
                             callbackContext.error(e.getMessage());
@@ -357,17 +356,20 @@ public class GoogleWallet extends CordovaPlugin {
                         try {
                             JSONObject value = new JSONObject();
                             value.put("result", "token not found");
-                            value.put("statusCode", 200);
                             callbackContext.success(value);
                         } catch (Exception e) {
                             callbackContext.error(e.getMessage());
                         }
                     }
                 } else {
+                    ApiException apiException = (ApiException) task.getException();
+                    String message = apiException.getMessage();
+                    int statusCode = apiException.getStatusCode();
+                    Log.i(TAG, "listTokens onComplete " + Integer.toString(statusCode));
                     try {
                         JSONObject value = new JSONObject();
-                        value.put("result", "Unknown error");
-                        value.put("statusCode", 0);
+                        value.put("message", message);
+                        value.put("statusCode", statusCode);
                         callbackContext.error(value);
                     } catch (Exception e) {
                         callbackContext.error(e.getMessage());
