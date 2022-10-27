@@ -1,5 +1,3 @@
-import { GetStableHardwareIdResponse } from "./GetStableHardwareIdResponse";
-
 /**
  * Returns the Wallet ID of the active wallet. If there is no active wallet, the status
  * GoogleWalletStatusCodes.NO_ACTIVE_WALLET is returned. A wallet can be created using the method createWallet.
