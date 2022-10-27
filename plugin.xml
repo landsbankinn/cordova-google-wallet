@@ -5,9 +5,9 @@
     <description>Cordova Device Plugin</description>
     <license>Apache 2.0</license>
     <keywords>Cordova,Google Wallet</keywords>
-    <!-- <js-module name="GoogleWallet" src="www/GoogleWallet.js">
-        <clobbers target="GooglePayIssuer" />
-    </js-module> -->
+    <js-module name="GoogleWallet" src="www/GoogleWallet.js">
+        <clobbers target="cordova.plugins.tapAndPay" />
+    </js-module>
 
     <platform name="android">      
         <framework src="com.google.android.gms:play-services-tapandpay:18.3.2" />
