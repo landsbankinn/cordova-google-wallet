@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
-        id="cordova-plugin-google-wallet" version="0.2.3">
+        id="cordova-google-wallet" version="0.2.3">
     <name>Cordova Google Wallet Plugin</name>
     <description>Cordova Device Plugin</description>
     <license>Apache 2.0</license>
