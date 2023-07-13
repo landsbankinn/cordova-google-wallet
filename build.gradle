@@ -6,6 +6,6 @@ buildscript {
         maven { url "../mobilebank-personal/targets/mobile/m2repository" }
     }
     dependencies {
-        implementation 'com.google.android.gms:play-services-tapandpay:18.3.2'
+        implementation 'com.google.android.gms:play-services-tapandpay:18.3.3'
     }
 }
