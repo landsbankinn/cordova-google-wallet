@@ -10,7 +10,7 @@
     </js-module>
 
     <platform name="android">      
-        <framework src="com.google.android.gms:play-services-tapandpay:18.3.2" />
+        <framework src="com.google.android.gms:play-services-tapandpay:18.3.3" />
         <framework src="com.google.android.gms:play-services-oss-licenses:17.0.0" />
         <config-file target="config.xml" parent="/*">
             <feature name="GoogleWallet">
